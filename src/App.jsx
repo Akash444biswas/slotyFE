@@ -1,4 +1,4 @@
-import { useState } from 'react'
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 
@@ -10,6 +10,8 @@ import Testimonials from './components/Testimonials'
 import Footer from './components/Footer'
 import Dashboard from './components/Dashboard'
 import BusinessDetail from './components/BusinessDetail'
+import BusinessList from './components/BusinessList'
+import BusinessDetailPublic from './components/BusinessDetailPublic'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -59,6 +61,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path='/businesses' element={<BusinessList />} />
+        <Route path='/businessManage/:id' element={<BusinessDetailPublic />} />
       </Routes>
     </Router>
   )

@@ -8,6 +8,9 @@ const BusinessDetailPublic = () => {
   const [business, setBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showTimeSlots, setShowTimeSlots] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [timeSlots, setTimeSlots] = useState([]);
   const hasFetched = useRef(false);
 
   useEffect(() => {
@@ -28,6 +31,22 @@ const BusinessDetailPublic = () => {
 
     fetchBusinessDetails();
   }, [id]);
+
+  const handleBookAppointment = (service) => {
+    navigate('/login', { state: { bookingIntent: true, serviceId: service.id } });
+  };
+
+  const handleViewTimeSlots = async (service) => {
+    try {
+      setSelectedService(service);
+      const response = await axios.get(`https://localhost:7208/api/TimeSlot/available/${service.id}`);
+      setTimeSlots(response.data);
+      setShowTimeSlots(true);
+    } catch (err) {
+      console.error('Error fetching time slots:', err);
+      setError('Failed to fetch time slots. Please try again.');
+    }
+  };
 
   if (loading) {
     return (
@@ -92,6 +111,8 @@ const BusinessDetailPublic = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">View Time Slots</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book Appointment</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -101,6 +122,22 @@ const BusinessDetailPublic = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{service.description}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{service.duration} minutes</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${service.price}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => handleViewTimeSlots(service)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        View Time Slots
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <button
+                        onClick={() => handleBookAppointment(service)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        Book Appointment
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
