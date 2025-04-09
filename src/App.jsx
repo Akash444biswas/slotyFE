@@ -9,6 +9,7 @@ import Features from './components/Features'
 import Testimonials from './components/Testimonials'
 import Footer from './components/Footer'
 import Dashboard from './components/Dashboard'
+import BusinessDetail from './components/BusinessDetail'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -47,6 +48,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/business/:id"
+          element={
+            <ProtectedRoute>
+              <BusinessDetail />
             </ProtectedRoute>
           }
         />

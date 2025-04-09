@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [businessToDelete, setBusinessToDelete] = useState(null);
   const [newBusiness, setNewBusiness] = useState({
     name: '',
     description: '',
@@ -126,6 +129,33 @@ const Dashboard = () => {
       ...newBusiness,
       [name]: value
     });
+  };
+
+  const handleDeleteBusiness = async (businessId) => {
+    try {
+      setLoading(true);
+
+      // Call the API to delete the business
+      const response = await axios.delete(`https://localhost:7208/api/Business/${businessId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      console.log('Business deleted successfully:', response.data);
+
+      // Remove the deleted business from the list
+      setBusinesses(businesses.filter(business => business.id !== businessId));
+
+      // Close the delete modal
+      setShowDeleteModal(false);
+      setBusinessToDelete(null);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error deleting business:', err);
+      setError('Failed to delete business. Please try again.');
+      setLoading(false);
+    }
   };
 
   // If user is not logged in, show a message
@@ -287,14 +317,26 @@ const Dashboard = () => {
                     {business.phone}
                   </div>
                   <div className="mt-6 flex justify-between">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    <button
+                      onClick={() => navigate(`/business/${business.id}`)}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    >
                       Manage Business
                     </button>
-                    <button className="text-gray-500 hover:text-gray-700 text-sm">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                      </svg>
-                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setBusinessToDelete(business);
+                          setShowDeleteModal(true);
+                        }}
+                        className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -316,6 +358,46 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Business Modal */}
+      {showDeleteModal && businessToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Delete Business</h2>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-4">Are you sure you want to delete <span className="font-semibold">{businessToDelete.name}</span>?</p>
+              <p className="text-gray-500 text-sm">This action cannot be undone.</p>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md mr-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteBusiness(businessToDelete.id)}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-md disabled:bg-red-300 hover:bg-red-700"
+              >
+                {loading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create Business Modal */}
       {showCreateModal && (
