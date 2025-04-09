@@ -29,6 +29,10 @@ const BusinessDetail = () => {
   });
   const [timeSlotError, setTimeSlotError] = useState('');
 
+  // State for modifying services
+  const [showModifyServiceModal, setShowModifyServiceModal] = useState(false);
+  const [serviceToModify, setServiceToModify] = useState(null);
+
   // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('user')) || null;
   const token = localStorage.getItem('token') || null;
@@ -182,11 +186,23 @@ const BusinessDetail = () => {
     try {
       setLoading(true);
 
-      // Create time slot data
+      // Get current date and combine with selected time
+      const today = new Date();
+      const startTime = new Date(today);
+      const endTime = new Date(today);
+      
+      // Set the time from the input
+      const [startHours, startMinutes] = newTimeSlot.startTime.split(':');
+      const [endHours, endMinutes] = newTimeSlot.endTime.split(':');
+      
+      startTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+      endTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+
+      // Create time slot data with the required format
       const timeSlotData = {
         serviceId: selectedService.id,
-        startTime: newTimeSlot.startTime,
-        endTime: newTimeSlot.endTime
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString()
       };
 
       // Call the API to create a new time slot
@@ -235,94 +251,53 @@ const BusinessDetail = () => {
     }
   };
 
-  // If user is not logged in, show a message
-    try {
-      setLoading(true);
-      setSelectedService(service);
-
-      // Fetch time slots for this service
-      const response = await axios.get(`https://localhost:7208/api/TimeSlot/service/${service.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      setTimeSlots(response.data);
-      setShowManageSlotsModal(true);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching time slots:', err);
-      setError('Failed to load time slots. Please try again.');
-      setLoading(false);
-    }
+  const handleModifyService = async (service) => {
+    setServiceToModify(service);
+    setShowModifyServiceModal(true);
   };
 
-  const handleAddTimeSlot = async (e) => {
+  const handleModifyServiceSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate that end time is after start time
-    const startDateTime = new Date(`2000-01-01T${newTimeSlot.startTime}`);
-    const endDateTime = new Date(`2000-01-01T${newTimeSlot.endTime}`);
-
-    if (endDateTime <= startDateTime) {
-      setTimeSlotError('End time must be after start time');
-      return;
-    }
-
     try {
       setLoading(true);
 
-      // Create time slot data
-      const timeSlotData = {
-        serviceId: selectedService.id,
-        startTime: newTimeSlot.startTime,
-        endTime: newTimeSlot.endTime
+      // Create service data for modification
+      const serviceData = {
+        name: serviceToModify.name,
+        description: serviceToModify.description,
+        price: serviceToModify.price,
+        duration: serviceToModify.duration
       };
 
-      // Call the API to create a new time slot
-      const response = await axios.post('https://localhost:7208/api/TimeSlot', timeSlotData, {
+      // Call the API to modify the service
+      const response = await axios.put(`https://localhost:7208/api/Service/${serviceToModify.id}`, serviceData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
-      // Add the new time slot to the list
-      setTimeSlots([...timeSlots, response.data]);
+      // Update the service in the list
+      setServices(services.map(service => 
+        service.id === serviceToModify.id ? response.data : service
+      ));
 
-      // Reset form
-      setNewTimeSlot({
-        startTime: '',
-        endTime: ''
-      });
-
+      // Reset form and close modal
+      setServiceToModify(null);
+      setShowModifyServiceModal(false);
       setLoading(false);
     } catch (err) {
-      console.error('Error creating time slot:', err);
-      setError('Failed to create time slot. Please try again.');
+      console.error('Error modifying service:', err);
+      setError('Failed to modify service. Please try again.');
       setLoading(false);
     }
   };
 
-  const handleDeleteTimeSlot = async (timeSlotId) => {
-    try {
-      setLoading(true);
-
-      // Call the API to delete the time slot
-      await axios.delete(`https://localhost:7208/api/TimeSlot/${timeSlotId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      // Remove the deleted time slot from the list
-      setTimeSlots(timeSlots.filter(slot => slot.id !== timeSlotId));
-
-      setLoading(false);
-    } catch (err) {
-      console.error('Error deleting time slot:', err);
-      setError('Failed to delete time slot. Please try again.');
-      setLoading(false);
-    }
+  const handleModifyServiceInputChange = (e) => {
+    const { name, value } = e.target;
+    setServiceToModify({
+      ...serviceToModify,
+      [name]: value
+    });
   };
 
   // If user is not logged in, show a message
@@ -543,6 +518,7 @@ const BusinessDetail = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button
                               className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 mr-2"
+                              onClick={() => handleModifyService(service)}
                             >
                               Modify
                             </button>
@@ -700,14 +676,14 @@ const BusinessDetail = () => {
         </div>
       )}
 
-      {/* Manage Slots Modal */}
-      {showManageSlotsModal && selectedService && (
+      {/* Modify Service Modal */}
+      {showModifyServiceModal && serviceToModify && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl p-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-800">Manage Time Slots - {selectedService.name}</h2>
+              <h2 className="text-xl font-bold text-gray-800">Modify Service</h2>
               <button
-                onClick={() => setShowManageSlotsModal(false)}
+                onClick={() => setShowModifyServiceModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -716,120 +692,15 @@ const BusinessDetail = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Time Slots List */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Existing Time Slots</h3>
-                {timeSlots.length === 0 ? (
-                  <div className="bg-gray-50 p-4 rounded-md text-gray-500 text-center">
-                    No time slots found for this service.
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Start Time
-                          </th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            End Time
-                          </th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {timeSlots.map((slot) => (
-                          <tr key={slot.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{new Date(slot.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${slot.isBooked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                                {slot.isBooked ? 'Booked' : 'Available'}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                              <button
-                                className="text-red-600 hover:text-red-900"
-                                onClick={() => handleDeleteTimeSlot(slot.id)}
-                                disabled={slot.isBooked}
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* Add New Time Slot Form */}
-              <div>
-                <h3 className="text-lg font-medium text-gray-800 mb-4">Add New Time Slot</h3>
-                <form onSubmit={handleAddTimeSlot} className="bg-white rounded-lg border border-gray-200 p-4">
-                  <div className="mb-4">
-                    <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
-                    <input
-                      type="time"
-                      id="startTime"
-                      name="startTime"
-                      value={newTimeSlot.startTime}
-                      onChange={handleTimeSlotInputChange}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                    <input
-                      type="time"
-                      id="endTime"
-                      name="endTime"
-                      value={newTimeSlot.endTime}
-                      onChange={handleTimeSlotInputChange}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  {timeSlotError && (
-                    <div className="mb-4 text-red-500 text-sm">
-                      {timeSlotError}
-                    </div>
-                  )}
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-blue-300 hover:bg-blue-700"
-                    >
-                      {loading ? 'Saving...' : 'Add Time Slot'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+            <form onSubmit={handleModifyServiceSubmit}>
               <div className="mb-4">
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
                 <input
                   type="text"
                   id="name"
                   name="name"
-                  value={newService.name}
-                  onChange={handleInputChange}
+                  value={serviceToModify.name}
+                  onChange={handleModifyServiceInputChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter service name"
@@ -841,8 +712,8 @@ const BusinessDetail = () => {
                 <textarea
                   id="description"
                   name="description"
-                  value={newService.description}
-                  onChange={handleInputChange}
+                  value={serviceToModify.description}
+                  onChange={handleModifyServiceInputChange}
                   rows="3"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter service description"
@@ -855,8 +726,8 @@ const BusinessDetail = () => {
                   type="number"
                   id="duration"
                   name="duration"
-                  value={newService.duration}
-                  onChange={handleInputChange}
+                  value={serviceToModify.duration}
+                  onChange={handleModifyServiceInputChange}
                   required
                   min="1"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -874,8 +745,8 @@ const BusinessDetail = () => {
                     type="number"
                     id="price"
                     name="price"
-                    value={newService.price}
-                    onChange={handleInputChange}
+                    value={serviceToModify.price}
+                    onChange={handleModifyServiceInputChange}
                     required
                     min="0"
                     step="0.01"
@@ -888,7 +759,7 @@ const BusinessDetail = () => {
               <div className="flex justify-end mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowAddServiceModal(false)}
+                  onClick={() => setShowModifyServiceModal(false)}
                   className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md mr-2"
                 >
                   Cancel
@@ -898,7 +769,7 @@ const BusinessDetail = () => {
                   disabled={loading}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-blue-300"
                 >
-                  {loading ? 'Saving...' : 'Save Service'}
+                  {loading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
