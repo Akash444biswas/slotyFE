@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import '../App.css';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -142,14 +143,31 @@ const Navbar = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ color: '#0284c7', fontSize: '1.5rem', fontWeight: 'bold' }}>Slotify</span>
+            <Link to="/" className="text-xl font-bold text-gray-800">
+              Sloty
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div style={{ display: 'none', alignItems: 'center', gap: '2rem' }} className="desktop-nav">
-            <a href="#features" style={{ color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }} className="nav-link">Features</a>
-            <a href="#testimonials" style={{ color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }} className="nav-link">Testimonials</a>
-            <a href="#contact" style={{ color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }} className="nav-link">Contact</a>
+            <Link
+              to="/businesses"
+              className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+            >
+              Book Appointment
+            </Link>
+            <Link
+              to="/#features"
+              className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+            >
+              Features
+            </Link>
+            <Link
+              to="/#contact"
+              className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+            >
+              Contact
+            </Link>
             <div style={{ display: 'flex', gap: '1rem', marginLeft: '1rem' }}>
               <button
                 onClick={() => setShowLoginModal(true)}
@@ -198,9 +216,27 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="mobile-nav animate-fadeIn" style={{ marginTop: '1rem', paddingBottom: '1rem' }}>
-            <a href="#features" style={{ display: 'block', padding: '0.5rem 0', color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }} className="nav-link">Features</a>
-            <a href="#testimonials" style={{ display: 'block', padding: '0.5rem 0', color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }} className="nav-link">Testimonials</a>
-            <a href="#contact" style={{ display: 'block', padding: '0.5rem 0', color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }} className="nav-link">Contact</a>
+            <Link
+              to="/businesses"
+              style={{ display: 'block', padding: '0.5rem 0', color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }}
+              className="nav-link"
+            >
+              Book Appointment
+            </Link>
+            <Link
+              to="/#features"
+              style={{ display: 'block', padding: '0.5rem 0', color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }}
+              className="nav-link"
+            >
+              Features
+            </Link>
+            <Link
+              to="/#contact"
+              style={{ display: 'block', padding: '0.5rem 0', color: '#374151', textDecoration: 'none', transition: 'color 0.3s' }}
+              className="nav-link"
+            >
+              Contact
+            </Link>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
               <button
                 onClick={() => setShowLoginModal(true)}
