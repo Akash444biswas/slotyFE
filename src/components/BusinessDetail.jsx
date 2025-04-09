@@ -80,8 +80,11 @@ const BusinessDetail = () => {
 
       // Create service data with business ID
       const serviceData = {
-        ...newService,
-        businessId: id
+        businessId: id,
+        name: newService.name,
+        description: newService.description,
+        price: parseFloat(newService.price),
+        duration: parseInt(newService.duration)
       };
 
       // Call the API to create a new service
@@ -770,6 +773,107 @@ const BusinessDetail = () => {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-blue-300"
                 >
                   {loading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Service Modal */}
+      {showAddServiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Add New Service</h2>
+              <button
+                onClick={() => setShowAddServiceModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleAddService}>
+              <div className="mb-4">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={newService.name}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter service name"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={newService.description}
+                  onChange={handleInputChange}
+                  rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter service description"
+                ></textarea>
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                <input
+                  type="number"
+                  id="duration"
+                  name="duration"
+                  value={newService.duration}
+                  onChange={handleInputChange}
+                  required
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter duration in minutes"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500">₹</span>
+                  </div>
+                  <input
+                    type="number"
+                    id="price"
+                    name="price"
+                    value={newService.price}
+                    onChange={handleInputChange}
+                    required
+                    min="0"
+                    step="0.01"
+                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter price"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowAddServiceModal(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md disabled:bg-blue-300"
+                >
+                  {loading ? 'Saving...' : 'Add Service'}
                 </button>
               </div>
             </form>
