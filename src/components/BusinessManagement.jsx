@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import BookingForm from './BookingForm';
 
 const BusinessManagement = () => {
   const [business, setBusiness] = useState(null);
@@ -7,7 +8,12 @@ const BusinessManagement = () => {
   const [error, setError] = useState(null);
   const [showAddService, setShowAddService] = useState(false);
   const [showAddTimeSlot, setShowAddTimeSlot] = useState(false);
+  const [showViewTimeSlots, setShowViewTimeSlots] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [loadingTimeSlots, setLoadingTimeSlots] = useState(false);
+  const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   // New service form state
   const [newService, setNewService] = useState({
@@ -22,6 +28,8 @@ const BusinessManagement = () => {
     startTime: '',
     endTime: ''
   });
+
+
 
   useEffect(() => {
     const fetchBusinessDetails = async () => {
@@ -49,12 +57,12 @@ const BusinessManagement = () => {
         price: parseFloat(newService.price),
         duration: parseInt(newService.duration)
       });
-      
+
       setBusiness(prev => ({
         ...prev,
         services: [...prev.services, response.data]
       }));
-      
+
       setShowAddService(false);
       setNewService({
         name: '',
@@ -75,7 +83,7 @@ const BusinessManagement = () => {
         ...newTimeSlot,
         serviceId: selectedService.id
       });
-      
+
       setShowAddTimeSlot(false);
       setNewTimeSlot({
         startTime: '',
@@ -85,6 +93,29 @@ const BusinessManagement = () => {
       console.error('Error adding time slot:', err);
       setError('Failed to add time slot. Please try again.');
     }
+  };
+
+
+
+
+
+
+
+  const handleBookAppointment = (service) => {
+    console.log('Book appointment clicked for service:', service);
+    // Create a direct copy of the service object to avoid any reference issues
+    const serviceCopy = { ...service };
+    setSelectedService(serviceCopy);
+    setShowBookingConfirmation(true);
+    console.log('showBookingConfirmation set to:', true);
+
+    // Force a re-render by using a timeout
+    setTimeout(() => {
+      console.log('After timeout - showBookingConfirmation:', showBookingConfirmation);
+      console.log('After timeout - selectedService:', selectedService);
+      // Force another state update to trigger re-render
+      setShowBookingConfirmation(prev => prev);
+    }, 100);
   };
 
   if (loading) {
@@ -110,7 +141,7 @@ const BusinessManagement = () => {
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">{business?.name}</h1>
           <p className="text-gray-600 mb-6">{business?.description}</p>
-          
+
           <div className="flex space-x-4 mb-6">
             <button
               onClick={() => setShowAddService(true)}
@@ -141,13 +172,14 @@ const BusinessManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${service.price}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <button
-                        onClick={() => {
-                          setSelectedService(service);
-                          setShowAddTimeSlot(true);
+                        onClick={(e) => {
+                          e.preventDefault();
+                          console.log('Button clicked for service:', service);
+                          handleBookAppointment(service);
                         }}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
                       >
-                        Add Time Slot
+                        Book Appointment
                       </button>
                     </td>
                   </tr>
@@ -164,11 +196,12 @@ const BusinessManagement = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900">Add New Service</h3>
                 <button
+                  type="button"
                   onClick={() => setShowAddService(false)}
                   className="text-gray-400 hover:text-gray-500"
                 >
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
@@ -232,11 +265,12 @@ const BusinessManagement = () => {
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium text-gray-900">Add Time Slot for {selectedService?.name}</h3>
                 <button
+                  type="button"
                   onClick={() => setShowAddTimeSlot(false)}
                   className="text-gray-400 hover:text-gray-500"
                 >
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
@@ -273,9 +307,81 @@ const BusinessManagement = () => {
             </div>
           </div>
         )}
+
+        {/* View Time Slots Modal */}
+        {showViewTimeSlots && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">Time Slots for {selectedService?.name}</h3>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowViewTimeSlots(false);
+                    setTimeSlots([]);
+                  }}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                  {error}
+                </div>
+              )}
+
+              {loadingTimeSlots ? (
+                <div className="flex justify-center items-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              ) : timeSlots && timeSlots.length > 0 ? (
+                <div className="space-y-4">
+                  {timeSlots.map((slot) => (
+                    <div
+                      key={slot.id}
+                      className={`border rounded p-4 ${slot.isBooked ? 'bg-gray-100' : 'hover:bg-blue-50 cursor-pointer'}`}
+                      onClick={() => {}}
+                    >
+                      <p className="font-medium">Start: {new Date(slot.startTime).toLocaleString()}</p>
+                      <p className="font-medium">End: {new Date(slot.endTime).toLocaleString()}</p>
+                      {slot.isBooked && (
+                        <p className="text-red-500 mt-2">Booked</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No time slots available</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Booking Form Component */}
+        {showBookingConfirmation && selectedService && (
+          <BookingForm
+            service={selectedService}
+            onClose={() => {
+              setShowBookingConfirmation(false);
+              setSelectedService(null);
+            }}
+            onSuccess={() => {
+              setBookingSuccess(true);
+              setTimeout(() => {
+                setShowBookingConfirmation(false);
+                setSelectedService(null);
+                setBookingSuccess(false);
+              }, 2000);
+            }}
+          />
+        )}
       </div>
     </div>
   );
 };
 
-export default BusinessManagement; 
+export default BusinessManagement;

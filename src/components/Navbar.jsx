@@ -269,7 +269,7 @@ const Navbar = () => {
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .nav-link:hover {
           color: #0284c7 !important;
         }
