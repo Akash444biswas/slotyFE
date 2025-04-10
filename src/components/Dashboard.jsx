@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard.css';
+import CustomerManagement from './CustomerManagement';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ const Dashboard = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [businessToDelete, setBusinessToDelete] = useState(null);
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [selectedBusinessId, setSelectedBusinessId] = useState(null);
   const [newBusiness, setNewBusiness] = useState({
     name: '',
     description: '',
@@ -186,38 +189,56 @@ const Dashboard = () => {
 
         <div className="mt-8">
           <ul>
-            <li className="px-6 py-3 bg-blue-50 border-l-4 border-blue-600">
-              <a href="#" className="flex items-center text-blue-600 font-medium">
+            <li className={`px-6 py-3 ${activeSection === 'dashboard' ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}>
+              <button
+                onClick={() => setActiveSection('dashboard')}
+                className={`flex items-center w-full text-left ${activeSection === 'dashboard' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'} transition-colors`}
+              >
                 <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 Dashboard
-              </a>
+              </button>
             </li>
-            <li className="px-6 py-3">
-              <a href="#" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+            <li className={`px-6 py-3 ${activeSection === 'appointments' ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}>
+              <button
+                onClick={() => setActiveSection('appointments')}
+                className={`flex items-center w-full text-left ${activeSection === 'appointments' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'} transition-colors`}
+              >
                 <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Appointments
-              </a>
+              </button>
             </li>
-            <li className="px-6 py-3">
-              <a href="#" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+            <li className={`px-6 py-3 ${activeSection === 'customers' ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}>
+              <button
+                onClick={() => {
+                  setActiveSection('customers');
+                  // If there are businesses, select the first one by default
+                  if (businesses.length > 0 && !selectedBusinessId) {
+                    setSelectedBusinessId(businesses[0].id);
+                  }
+                }}
+                className={`flex items-center w-full text-left ${activeSection === 'customers' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'} transition-colors`}
+              >
                 <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Customers
-              </a>
+              </button>
             </li>
-            <li className="px-6 py-3">
-              <a href="#" className="flex items-center text-gray-600 hover:text-blue-600 transition-colors">
+            <li className={`px-6 py-3 ${activeSection === 'settings' ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}>
+              <button
+                onClick={() => setActiveSection('settings')}
+                className={`flex items-center w-full text-left ${activeSection === 'settings' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-blue-600'} transition-colors`}
+              >
                 <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Settings
-              </a>
+              </button>
             </li>
           </ul>
         </div>
@@ -239,122 +260,200 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="ml-64 p-8">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-gray-800 mr-4">My Businesses</h1>
-            <button
-              onClick={() => setShouldFetch(true)}
-              className="p-2 text-gray-500 rounded-full hover:bg-gray-100"
-              title="Refresh"
-              disabled={loading || shouldFetch}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Create Business
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 p-4 rounded-md text-red-600">
-            {error}
-          </div>
-        ) : businesses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-sm p-8">
-            <img
-              src="https://illustrations.popsy.co/amber/digital-nomad.svg"
-              alt="No businesses"
-              className="w-48 h-48 mb-6"
-            />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">No businesses found</h2>
-            <p className="text-gray-500 mb-6 text-center">You haven't created any businesses yet. Create your first business to get started.</p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-md flex items-center text-lg"
-            >
-              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Create Business
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {businesses.map((business) => (
-              <div key={business.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
-                  <div className="absolute bottom-4 left-4 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm">
-                    {new Date(business.createdAt).toLocaleDateString()}
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">{business.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{business.description}</p>
-                  <div className="flex items-center text-gray-500 text-sm mb-1">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    {business.address}
-                  </div>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                    {business.phone}
-                  </div>
-                  <div className="mt-6 flex justify-between">
-                    <button
-                      onClick={() => navigate(`/business/${business.id}`)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      Manage Business
-                    </button>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => {
-                          setBusinessToDelete(business);
-                          setShowDeleteModal(true);
-                        }}
-                        className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center"
-                      >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
+        {activeSection === 'dashboard' && (
+          <>
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center">
+                <h1 className="text-2xl font-bold text-gray-800 mr-4">My Businesses</h1>
+                <button
+                  onClick={() => setShouldFetch(true)}
+                  className="p-2 text-gray-500 rounded-full hover:bg-gray-100"
+                  title="Refresh"
+                  disabled={loading || shouldFetch}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
               </div>
-            ))}
-
-            {/* Add Business Card */}
-            <div
-              onClick={() => setShowCreateModal(true)}
-              className="bg-white rounded-lg shadow-sm border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 h-full cursor-pointer"
-            >
-              <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md flex items-center"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-800 mb-1">Add New Business</h3>
-              <p className="text-gray-500 text-sm text-center">Create a new business to manage appointments</p>
+                Create Business
+              </button>
             </div>
+
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 p-4 rounded-md text-red-600">
+                {error}
+              </div>
+            ) : businesses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-sm p-8">
+                <img
+                  src="https://illustrations.popsy.co/amber/digital-nomad.svg"
+                  alt="No businesses"
+                  className="w-48 h-48 mb-6"
+                />
+                <h2 className="text-xl font-semibold text-gray-700 mb-2">No businesses found</h2>
+                <p className="text-gray-500 mb-6 text-center">You haven't created any businesses yet. Create your first business to get started.</p>
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-md flex items-center text-lg"
+                >
+                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Create Business
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {businesses.map((business) => (
+                  <div key={business.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+                      <div className="absolute bottom-4 left-4 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm">
+                        {new Date(business.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">{business.name}</h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{business.description}</p>
+                      <div className="flex items-center text-gray-500 text-sm mb-1">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {business.address}
+                      </div>
+                      <div className="flex items-center text-gray-500 text-sm">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        {business.phone}
+                      </div>
+                      <div className="mt-6 flex justify-between">
+                        <button
+                          onClick={() => navigate(`/business/${business.id}`)}
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                        >
+                          Manage Business
+                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              setBusinessToDelete(business);
+                              setShowDeleteModal(true);
+                            }}
+                            className="text-red-500 hover:text-red-700 text-sm font-medium flex items-center"
+                          >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Add Business Card */}
+                <div
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-white rounded-lg shadow-sm border-2 border-dashed border-gray-300 flex flex-col items-center justify-center p-6 h-full cursor-pointer"
+                >
+                  <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-1">Add New Business</h3>
+                  <p className="text-gray-500 text-sm text-center">Create a new business to manage appointments</p>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeSection === 'appointments' && (
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Appointments</h1>
+            <p className="text-gray-500">Appointment management coming soon...</p>
+          </div>
+        )}
+
+        {activeSection === 'customers' && (
+          <div>
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-2xl font-bold text-gray-800">Customers</h1>
+
+              {businesses.length > 0 && (
+                <div className="relative">
+                  <select
+                    value={selectedBusinessId || ''}
+                    onChange={(e) => setSelectedBusinessId(e.target.value)}
+                    className="appearance-none bg-white border border-gray-300 rounded-md py-2 pl-3 pr-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="" disabled>Select a business</option>
+                    {businesses.map(business => (
+                      <option key={business.id} value={business.id}>{business.name}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {businesses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-sm p-8">
+                <img
+                  src="https://illustrations.popsy.co/amber/taking-notes.svg"
+                  alt="No businesses"
+                  className="w-48 h-48 mb-6"
+                />
+                <h2 className="text-xl font-semibold text-gray-700 mb-2">No businesses found</h2>
+                <p className="text-gray-500 mb-6 text-center">
+                  You need to create a business before you can view customers.
+                </p>
+                <button
+                  onClick={() => {
+                    setActiveSection('dashboard');
+                    setShowCreateModal(true);
+                  }}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-md flex items-center text-lg"
+                >
+                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Create Business
+                </button>
+              </div>
+            ) : !selectedBusinessId ? (
+              <div className="bg-blue-50 p-4 rounded-md text-blue-600">
+                Please select a business to view its customers.
+              </div>
+            ) : (
+              <CustomerManagement businessId={selectedBusinessId} />
+            )}
+          </div>
+        )}
+
+        {activeSection === 'settings' && (
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Settings</h1>
+            <p className="text-gray-500">Settings page coming soon...</p>
           </div>
         )}
       </div>
